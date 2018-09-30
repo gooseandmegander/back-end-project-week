@@ -70,8 +70,7 @@ const Note = require('../models/note');
 
 module.exports = function (server) {
   server.get('/api/notes', (req, res) => {
-    Note.find({ author: req.user._id })
-      .select('-author')
+    Note.find()
       .then(notes => {
         res.status(200).json(notes);
       })
