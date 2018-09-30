@@ -124,7 +124,15 @@ module.exports = function (server) {
   server.put('/api/notes/:id', (req, res) => {
     Note.findByIdAndUpdate(req.params.id, req.body)
       .then(response => {
-        res.status(204).json(response);
+        Note.find()
+          .then(notes => {
+            res.status(204).json(notes);
+          })
+          .catch(err => {
+            res
+              .status(500)
+              .json({ errorMessage: 'Error getting notes from the server.' });
+          });
       })
       .catch(err => {
         res.status(500).json({
