@@ -80,9 +80,8 @@ module.exports = function (server) {
   });
 
   server.post('/api/notes', (req, res) => {
-    console.log('body', req.body);
-    const { title, content, author } = req.body;
-    if (!title || !author || !content) {
+    const { title, content } = req.body;
+    if (!title || !content) {
       res.status(400).json({
         message: 'Please provide a title and content to save a note.',
       });
