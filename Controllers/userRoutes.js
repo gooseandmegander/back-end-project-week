@@ -1,75 +1,75 @@
-const jwt = require('jsonwebtoken');
-const passport = require('passport');
-const LocalStrategy = require('passport-local');
-const { ExtractJwt } = require('passport-jwt');
-const JwtStrategy = require('passport-jwt').Strategy;
+// const jwt = require('jsonwebtoken');
+// const passport = require('passport');
+// const LocalStrategy = require('passport-local');
+// const { ExtractJwt } = require('passport-jwt');
+// const JwtStrategy = require('passport-jwt').Strategy;
 require('dotenv').config();
 
-const secret = 'no size limit on tokens';
+// const secret = 'no size limit on tokens';
 const User = require('../models/user');
 const Note = require('../models/note');
 
-function makeToken(user) {
-  const timestamp = new Date().getTime();
-  const payload = {
-    sub: user._id,
-    username: user.username,
-    iat: timestamp,
-  };
-  const options = { expiresIn: '4h' };
-  return jwt.sign(payload, secret, options);
-}
+// function makeToken(user) {
+//   const timestamp = new Date().getTime();
+//   const payload = {
+//     sub: user._id,
+//     username: user.username,
+//     iat: timestamp,
+//   };
+//   const options = { expiresIn: '4h' };
+//   return jwt.sign(payload, secret, options);
+// }
 
-const localStrategy = new LocalStrategy(function(username, password, done) {
-  User.findOne({ username }, function(err, user) {
-    if (err) {
-      done(err);
-    }
-    if (!user) {
-      done(null, false);
-    }
-    user.isPasswordValid(password, function(err, isValid) {
-      if (err) {
-        return done(err);
-      }
-      if (isValid) {
-        const { _id, username } = user;
-        return done(null, { _id, username });
-      }
-      return done(null, false);
-    });
-  });
-});
+// const localStrategy = new LocalStrategy(function(username, password, done) {
+//   User.findOne({ username }, function(err, user) {
+//     if (err) {
+//       done(err);
+//     }
+//     if (!user) {
+//       done(null, false);
+//     }
+//     user.isPasswordValid(password, function(err, isValid) {
+//       if (err) {
+//         return done(err);
+//       }
+//       if (isValid) {
+//         const { _id, username } = user;
+//         return done(null, { _id, username });
+//       }
+//       return done(null, false);
+//     });
+//   });
+// });
 
-const jwtOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: secret,
-};
+// const jwtOptions = {
+//   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+//   secretOrKey: secret,
+// };
 
-const jwtStrategy = new JwtStrategy(jwtOptions, function(payload, done) {
-  User.findById(payload.sub)
-    .populate('notes')
-    .select('-password')
-    .then(user => {
-      console.log('user', user);
-      if (user) {
-        done(null, user);
-      } else {
-        done(null, false);
-      }
-    })
-    .catch(err => {
-      return done(err, false);
-    });
-});
+// const jwtStrategy = new JwtStrategy(jwtOptions, function(payload, done) {
+//   User.findById(payload.sub)
+//     .populate('notes')
+//     .select('-password')
+//     .then(user => {
+//       console.log('user', user);
+//       if (user) {
+//         done(null, user);
+//       } else {
+//         done(null, false);
+//       }
+//     })
+//     .catch(err => {
+//       return done(err, false);
+//     });
+// });
 
-passport.use(localStrategy);
-passport.use(jwtStrategy);
-const authenticate = passport.authenticate('local', { session: false });
-const protected = passport.authenticate('jwt', { session: false });
+// passport.use(localStrategy);
+// passport.use(jwtStrategy);
+// const authenticate = passport.authenticate('local', { session: false });
+// const protected = passport.authenticate('jwt', { session: false });
 
-module.exports = function(server) {
-  server.get('/api/notes', protected, (req, res) => {
+module.exports = function (server) {
+  server.get('/api/notes', (req, res) => {
     Note.find({ author: req.user._id })
       .select('-author')
       .then(notes => {
@@ -80,7 +80,7 @@ module.exports = function(server) {
       });
   });
 
-  server.post('/api/notes', protected, (req, res) => {
+  server.post('/api/notes', (req, res) => {
     console.log('body', req.body);
     const { title, content, author } = req.body;
     if (!title || !author || !content) {
@@ -102,7 +102,7 @@ module.exports = function(server) {
       });
   });
 
-  server.delete('/api/notes/:id', protected, (req, res) => {
+  server.delete('/api/notes/:id', (req, res) => {
     Note.findByIdAndRemove(req.params.id)
       .then(response => {
         Note.find({})
@@ -122,7 +122,7 @@ module.exports = function(server) {
       });
   });
 
-  server.put('/api/notes/:id', protected, (req, res) => {
+  server.put('/api/notes/:id', (req, res) => {
     Note.findByIdAndUpdate(req.params.id, req.body)
       .then(response => {
         res.status(204).json({ message: 'Note updated successfully' });
@@ -134,24 +134,24 @@ module.exports = function(server) {
       });
   });
 
-  server.post('/api/register', (req, res) => {
-    const credentials = req.body;
+  //   server.post('/api/register', (req, res) => {
+  //     const credentials = req.body;
 
-    const user = new User(credentials);
-    user
-      .save()
-      .then(newUser => {
-        const token = makeToken(newUser);
-        res.status(200).json({ token });
-      })
-      .catch(err => {
-        res
-          .status(500)
-          .json({ errorMessage: 'A server error occurred while registering ' });
-      });
-  });
+  //     const user = new User(credentials);
+  //     user
+  //       .save()
+  //       .then(newUser => {
+  //         const token = makeToken(newUser);
+  //         res.status(200).json({ token });
+  //       })
+  //       .catch(err => {
+  //         res
+  //           .status(500)
+  //           .json({ errorMessage: 'A server error occurred while registering ' });
+  //       });
+  //   });
 
-  server.post('/api/login', authenticate, (req, res) => {
-    res.status(200).json({ token: makeToken(req.user), user: req.user });
-  });
+  //   server.post('/api/login', authenticate, (req, res) => {
+  //     res.status(200).json({ token: makeToken(req.user), user: req.user });
+  //   });
 };
