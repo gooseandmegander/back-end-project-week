@@ -87,10 +87,9 @@ module.exports = function (server) {
       });
     }
     const note = new Note(req.body);
-    note
-      .save()
+    note.save()
       .then(savedNote => {
-        res.json(savedNote);
+        res.status(200).json(savedNote);
       })
       .catch(err => {
         res.status(500).json({

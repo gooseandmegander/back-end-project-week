@@ -9,12 +9,7 @@ const noteSchema = new mongoose.Schema({
   content: {
     type: String,
     required: true,
-  },
-  author: {
-    type: ObjectId,
-    required: true,
-    ref: 'User',
-  },
+  }
 });
 
 const Note = mongoose.model('Note', noteSchema);
