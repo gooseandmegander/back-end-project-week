@@ -126,7 +126,7 @@ module.exports = function (server) {
       .then(response => {
         Note.find()
           .then(notes => {
-            res.status(204).json(notes);
+            res.status(200).json(notes);
           })
           .catch(err => {
             res
