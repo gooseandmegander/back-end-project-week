@@ -102,9 +102,9 @@ module.exports = function (server) {
   server.delete('/api/notes/:id', (req, res) => {
     Note.findByIdAndRemove(req.params.id)
       .then(response => {
-        Note.find({})
+        Note.find()
           .then(notes => {
-            res.status(204).json(notes);
+            res.status(200).json(notes);
           })
           .catch(err => {
             res
